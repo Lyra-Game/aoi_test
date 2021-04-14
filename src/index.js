@@ -236,3 +236,10 @@ document.getElementById('move').addEventListener('click', function() {
     document.getElementById('tools_title').innerText = show_title()
 })
 
+const ws = new WebSocket('ws://10.0.136.6:33302')
+ws.onopen = () => {
+    console.log('connect success!')
+}
+ws.onmessage = (message) => {
+    ws.send('收到' + message.data)
+}

@@ -3,3 +3,5 @@ node_modules
 *.sublime-workspace
 bundle.js
 package-lock.json
+server/bin/
+server/build/
