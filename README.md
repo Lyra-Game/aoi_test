@@ -1,6 +1,6 @@
 ## 启动页面
 
-    npm install -g webpack webpack-cli
+    npm install -g webpack webpack-cli http-server
     npm run build
     ./start
 
