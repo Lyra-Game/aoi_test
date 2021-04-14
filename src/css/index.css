@@ -1,0 +1,39 @@
+html,body{
+  width: 100%;
+  height: 100%;
+}
+
+.box{
+  display: -webkit-flex; /* Safari */
+  display: flex;
+  flex-direction: row;
+}
+
+.list{
+  display: -webkit-flex; /* Safari */
+  display: flex;
+  flex-direction: column;
+  margin-left: 100px;
+}
+
+.tools{
+  display: -webkit-flex; /* Safari */
+  display: flex;
+  flex-direction: column;
+  padding-top: 100px;
+  align-items: flex-start;
+  width: 600px;
+}
+
+.tools input{
+  margin: 10px;
+  width: 100px;
+  height: 50px;
+}
+
+.show{
+  border: 1px solid #000;
+  overflow: scroll;
+  height: 400px;
+  width: 400px;
+}

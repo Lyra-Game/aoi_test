@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Boom</title>
+  </head>
+  <body>
+    <div class="box">
+        <div>
+            <canvas id="scene" width="1000px" height="2000px"></canvas>
+        </div>
+        <div class="list">
+          <div id="tools" class="tools">
+              <label id="tools_title" style="font-size:30px">状态：空</label>
+              <p id="tools_info" style="height: 30px"></p>
+              <input id="add" type='button' value="添加">
+              <input id="del" type='button' value="删除">
+              <input id="move" type='button' value="移动">
+              <div>
+                <input id="view" type='button' value="设置视野">
+                <label id="view_size"></label>
+              </div>
+          </div>
+          <div class="show" style="margin-top:5px;">
+            <ul id="log"></ul>
+          </div>
+        </div>
+    </div>
+    <script src="bundle.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "aoi_test",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "webpack"
+  },
+  "dependencies": {
+    "style-loader": "latest",
+    "css-loader": "latest"
+  },
+  "devDependencies": {
+    "webpack": "latest",
+    "webpack-cli": "latest"
+  }
+}
