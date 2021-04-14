@@ -13,7 +13,7 @@ const h = 800
 const cell_w = 40
 const cell_h = 40
 
-const ws = new WebSocket('ws://localhost:33302')
+const ws = new WebSocket('ws://10.0.136.4:33302')
 ws.onopen = () => {
     console.log('connect success!')
     ws.send(JSON.stringify({
