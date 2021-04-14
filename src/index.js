@@ -13,6 +13,26 @@ const h = 800
 const cell_w = 40
 const cell_h = 40
 
+const ws = new WebSocket('ws://10.0.136.6:33302')
+ws.onopen = () => {
+    console.log('connect success!')
+    ws.send(JSON.stringify({
+        type: "create",
+        w: w,
+        h: h,
+        cell_w: cell_w,
+        cell_h: cell_h,
+    }))
+}
+ws.onmessage = (message) => {
+    // ws.send('收到' + message.data)
+    let data = JSON.parse(message.data)
+    console.log("移动列表：", data.move)
+    console.log("添加列表：", data.add)
+    console.log("删除列表：", data.del)
+}
+
+
 let mouse_type = undefined
 let nodes_id = 0
 let node_r = 10
@@ -98,6 +118,12 @@ canvas.addEventListener('click', function(e) {
                     r : node_r,
                     color: 'red',
                 })
+                ws.send(JSON.stringify({
+                    type: "add",
+                    id: nodes_id,
+                    x: x,
+                    y: y,
+                }))
                 mouse_hover = nodes.length - 1
                 dirty = true
                 let text = `添加新实体：${nodes_id}<${x},${y}>`
@@ -107,6 +133,12 @@ canvas.addEventListener('click', function(e) {
             case "del":
                 for (let i = nodes.length - 1; i >= 0; i--) {
                     if (check_in_node(nodes[i], x, y)) {
+                        ws.send(JSON.stringify({
+                            type: "del",
+                            id: nodes[i].id,
+                            x: nodes[i].x,
+                            y: nodes[i].y,
+                        }))
                         let text = `删除实体：${nodes[i].id}<${nodes[i].x},${nodes[i].y}>`
                         document.getElementById('tools_info').innerHTML = text
                         add_li("<font color='blue'>" + text + "</font>")
@@ -175,6 +207,14 @@ canvas.addEventListener('mousemove', function(e) {
         switch(mouse_type) {
             case "move":
                 if (move_target != -1) {
+                     ws.send(JSON.stringify({
+                        type: "move",
+                        id: nodes[move_target].id,
+                        ox: nodes[move_target].x,
+                        oy: nodes[move_target].y,
+                        x: x,
+                        y: y,
+                    }))
                     nodes[move_target].x = x
                     nodes[move_target].y = y
                     document.getElementById('tools_info').innerHTML = `选中移动：${nodes[move_target].id}<${x},${y}>`
@@ -186,6 +226,13 @@ canvas.addEventListener('mousemove', function(e) {
                 if (view != undefined && view.draw) {
                     view.w = x - view.x
                     view.h = y - view.y
+                    ws.send(JSON.stringify({
+                        type: "view",
+                        x: view.x + view.w / 2,
+                        y: view.y + view.h / 2,
+                        w: view.w,
+                        h: view.h,
+                    }))
                     dirty = true
                     draw_node()
                     document.getElementById('tools_info').innerHTML = `视野：左上角<${view.x},${view.y}><宽:${view.w},高:${view.h}>`
@@ -236,10 +283,4 @@ document.getElementById('move').addEventListener('click', function() {
     document.getElementById('tools_title').innerText = show_title()
 })
 
-const ws = new WebSocket('ws://10.0.136.6:33302')
-ws.onopen = () => {
-    console.log('connect success!')
-}
-ws.onmessage = (message) => {
-    ws.send('收到' + message.data)
-}
+
