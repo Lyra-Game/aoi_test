@@ -192,6 +192,13 @@ canvas.addEventListener('mouseup', function(e) {
     }
     if (view != undefined && mouse_type == "view") {
         view.draw = false
+        ws.send(JSON.stringify({
+            type: "view",
+            x: view.x + view.w / 2,
+            y: view.y + view.h / 2,
+            w: view.w,
+            h: view.h,
+        }))
         let text = `<font color='green'>创建视野：左上角<${view.x},${view.y}><宽:${view.w},高:${view.h}></font>`
         add_li(text)
         document.getElementById('view_size').innerText = `视野：左上角<${view.x},${view.y}><宽:${view.w},高:${view.h}>`
@@ -226,13 +233,13 @@ canvas.addEventListener('mousemove', function(e) {
                 if (view != undefined && view.draw) {
                     view.w = x - view.x
                     view.h = y - view.y
-                    ws.send(JSON.stringify({
-                        type: "view",
-                        x: view.x + view.w / 2,
-                        y: view.y + view.h / 2,
-                        w: view.w,
-                        h: view.h,
-                    }))
+                    // ws.send(JSON.stringify({
+                    //     type: "view",
+                    //     x: view.x + view.w / 2,
+                    //     y: view.y + view.h / 2,
+                    //     w: view.w,
+                    //     h: view.h,
+                    // }))
                     dirty = true
                     draw_node()
                     document.getElementById('tools_info').innerHTML = `视野：左上角<${view.x},${view.y}><宽:${view.w},高:${view.h}>`

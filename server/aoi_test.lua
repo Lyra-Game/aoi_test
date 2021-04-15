@@ -18,10 +18,11 @@ local handle = {}
 local MODE = ...
 
 if MODE == "agent" then
-    local client_fd
+    local client_fd_map = {}
     function handle.connect(id)
         print("ws connect from: " .. tostring(id))
-        client_fd = id
+        client_fd_map[id] = {}
+        -- client_fd = id
     end
     function handle.handshake(id, header, url)
         local addr = websocket.addrinfo(id)
@@ -40,48 +41,62 @@ if MODE == "agent" then
     end
     function handle.close(id, code, reason)
         print("ws close from: " .. tostring(id), code, reason)
+        client_fd_map[id] = nil
     end
     function handle.error(id)
         print("ws error from: " .. tostring(id))
+        client_fd_map[id] = nil
     end
 
 
-    local grid_handle
-    local view
-    local all_nodes = {}
+    -- local grid_handle
+    -- local view
+    -- local all_nodes = {}
 
     function handle.message(id, msg, msg_type)
         assert(msg_type == "binary" or msg_type == "text")
         -- websocket.write(id, msg)
         -- print("str = ", msg)
+        assert(client_fd_map[id])
         local info = decode(msg)
         if info then
             if info.type == "create" then
-                grid_handle = Grid.new({
-                    cell_w = info.cell_w,
-                    cell_h = info.cell_h,
-                    l = 0, t = 0,
-                    r = info.w, b = info.h,
-                })
+                if not(client_fd_map[id].grid_handle) then
+                    client_fd_map[id].grid_handle = Grid.new({
+                        cell_w = info.cell_w,
+                        cell_h = info.cell_h,
+                        l = 0, t = 0,
+                        r = info.w, b = info.h,
+                    })
+                end
                 print("create map")
             elseif info.type == "add" then
-                assert(grid_handle)
-                grid_handle:insert(info.id, info.x, info.y)
+                assert(client_fd_map[id].grid_handle)
+                client_fd_map[id].grid_handle:insert(info.id, info.x, info.y)
                 print("add node", info.id, info.x, info.y)
-                all_nodes[info.id] = { x = info.x, y = info.y }
+                if not(client_fd_map[id].all_nodes) then
+                    client_fd_map[id].all_nodes = {}
+                end
+                client_fd_map[id].all_nodes[info.id] = { x = info.x, y = info.y }
             elseif info.type == "del" then
-                assert(grid_handle)
-                grid_handle:remove(info.id, info.x, info.y)
+                assert(client_fd_map[id].grid_handle)
+                client_fd_map[id].grid_handle:remove(info.id, info.x, info.y)
                 print("del node", info.id, info.x, info.y)
-                all_nodes[info.id] = nil
+                if not(client_fd_map[id].all_nodes) then
+                    client_fd_map[id].all_nodes = {}
+                end
+                client_fd_map[id].all_nodes[info.id] = nil
             elseif info.type == "move" then
-                assert(grid_handle)
-                grid_handle:move(info.id, info.ox, info.oy, info.x, info.y)
+                assert(client_fd_map[id].grid_handle)
+                client_fd_map[id].grid_handle:move(info.id, info.ox, info.oy, info.x, info.y)
                 print("move node", info.id, info.ox, info.oy, info.x, info.y)
-                all_nodes[info.id] = { x = info.x, y = info.y }
+                if not(client_fd_map[id].all_nodes) then
+                    client_fd_map[id].all_nodes = {}
+                end
+                client_fd_map[id].all_nodes[info.id] = { x = info.x, y = info.y }
             elseif info.type == "view" then
-                assert(grid_handle)
-                view = {
+                assert(client_fd_map[id].grid_handle)
+                client_fd_map[id].view = {
                     x = info.x,
                     y = info.y,
                     w = info.w,
@@ -132,26 +147,27 @@ if MODE == "agent" then
         end
         return add, move, del
     end
-    local snapshot = {}
     function timer(interval)
         skynet.timeout(interval, function()   
-            if grid_handle and view and client_fd then
-                local cur = grid_handle:query(view.x, view.y, view.w, view.h)
-                local new_snapshot = {}
-                for _, v in pairs(cur) do
-                    new_snapshot[v] = {
-                        x = all_nodes[v].x,
-                        y = all_nodes[v].y,
-                    }
-                end
-                local add, move, del = cmp_snapshot(snapshot, new_snapshot)
-                snapshot = new_snapshot
-                if #add > 0 or #move > 0 or #del > 0 then
-                    websocket.write(client_fd, encode({
-                        add = add,
-                        move = move,
-                        del = del,
-                    }))
+            for fd, v in pairs(client_fd_map) do
+                if v.grid_handle and v.view then
+                    local cur = v.grid_handle:query(v.view.x, v.view.y, v.view.w, v.view.h)
+                    local new_snapshot = {}
+                    for _, id in pairs(cur) do
+                        new_snapshot[id] = {
+                            x = v.all_nodes[id].x,
+                            y = v.all_nodes[id].y,
+                        }
+                    end
+                    local add, move, del = cmp_snapshot(v.snapshot or {}, new_snapshot)
+                    v.snapshot = new_snapshot
+                    if #add > 0 or #move > 0 or #del > 0 then
+                        websocket.write(fd, encode({
+                            add = add,
+                            move = move,
+                            del = del,
+                        }))
+                    end
                 end
             end
             timer(interval)
