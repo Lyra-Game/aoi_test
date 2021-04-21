@@ -5,3 +5,4 @@ bundle.js
 package-lock.json
 server/bin/
 server/build/
+*.log
