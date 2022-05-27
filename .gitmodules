@@ -1,9 +1,9 @@
 [submodule "server/skynet"]
 	path = server/skynet
-	url = git@10.0.136.8:server/skynet.git
+	url = https://github.com/cloudwu/skynet.git
 [submodule "server/3rd/lua-cjson"]
 	path = server/3rd/lua-cjson
-	url = git@10.0.136.8:server/lua-cjson.git
+	url = https://github.com/mpx/lua-cjson.git
 [submodule "server/3rd/lua-grid"]
 	path = server/3rd/lua-grid
-	url = git@10.0.136.8:caiyiheng/aoi.git
+	url = https://github.com/Lyra-Game/aoi.git
